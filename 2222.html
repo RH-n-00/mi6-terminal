@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HALE / SIS INTERNAL NETWORK</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+
+:root{
+  --bg:#040507;
+  --panel:#050608;
+  --panel-2:#0a0b0d;
+  --gold:#d2b483;
+  --gold-soft:#a58a63;
+  --white:#efe8de;
+  --muted:#cdbfa8;
+  --line:rgba(210,180,131,.42);
+  --line-soft:rgba(210,180,131,.12);
+  --live:#b01814;
+  --font-baskerville: Baskerville, 'Baskerville Old Face', 'Libre Baskerville', Georgia, serif;
+  --font-copperplate: Copperplate, 'Copperplate Gothic Bold', 'Copperplate Gothic Light', 'Palatino Linotype', serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(210,180,131,.06), transparent 22%),
+    linear-gradient(180deg,#060709 0%, #020304 55%, #010203 100%);
+  color:var(--white);
+  font-family:'Inter',system-ui,sans-serif;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.015), transparent 8%, transparent 92%, rgba(255,255,255,.015)),
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.025) 0 1px, transparent 1px 4px);
+  opacity:.18;
+  mix-blend-mode:screen;
+}
+body::after{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at center, transparent 54%, rgba(0,0,0,.52) 100%);
+}
+
+.shell{
+  position:relative;
+  width:min(96vw, 1180px);
+  min-height:calc(100vh - 28px);
+  margin:14px auto;
+  background:linear-gradient(180deg, rgba(5,6,8,.98), rgba(2,3,4,.995));
+  border:1px solid rgba(255,255,255,.045);
+  box-shadow:0 40px 120px rgba(0,0,0,.58);
+  overflow:hidden;
+}
+.shell::before{
+  content:"";
+  position:absolute; inset:26px;
+  border:1px solid rgba(210,180,131,.05);
+  pointer-events:none;
+}
+.shell::after{
+  content:"";
+  position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 16%, rgba(255,255,255,.02), transparent 24%);
+  pointer-events:none;
+}
+
+.topbar{
+  position:relative; z-index:5;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:18px 20px 16px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.top-left,.top-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.label{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:34px;
+  padding:0 13px;
+  background:rgba(255,255,255,.012);
+  border:1px solid rgba(255,255,255,.055);
+  color:#d8ccb7;
+  font-size:11px;
+  font-weight:400;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+}
+.label.mark{color:var(--gold)}
+.status{
+  display:inline-flex; align-items:center; gap:10px;
+  color:#d8ccb7;
+  font-size:11px;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+}
+.status-dot{
+  width:7px; height:7px; border-radius:50%;
+  background:var(--live);
+  box-shadow:0 0 12px rgba(176,24,20,.8);
+}
+
+.hero{
+  position:relative;
+  padding:120px 0 90px;
+  min-height:1480px;
+}
+.guide-left,.guide-right{
+  position:absolute; top:0; bottom:0; width:1px; pointer-events:none;
+  background:linear-gradient(180deg, transparent, rgba(210,180,131,.14) 8%, rgba(210,180,131,.14) 92%, transparent);
+}
+.guide-left{left:32px}
+.guide-right{right:32px}
+
+.hero-inner{
+  position:relative; z-index:2;
+  width:min(88vw, 980px);
+  margin:0 auto;
+}
+
+.watermark{
+  position:absolute;
+  left:50%; top:180px;
+  width:min(92vw, 980px);
+  aspect-ratio:1 / 1.03;
+  transform:translateX(-50%);
+  background-image:url('https://upload.wikimedia.org/wikipedia/commons/5/5b/Coat_of_arms_of_the_United_Kingdom_%282022%2C_variant_2%29.svg');
+  background-repeat:no-repeat;
+  background-position:center top;
+  background-size:100% auto;
+  opacity:.09;
+  filter:grayscale(1) contrast(.8) brightness(.62);
+  pointer-events:none;
+  z-index:0;
+}
+.watermark::before{
+  content:"";
+  position:absolute; inset:-12% -8% auto;
+  height:95%;
+  border-radius:50%;
+  background:radial-gradient(circle at center, rgba(210,180,131,.05) 0, rgba(210,180,131,.03) 28%, transparent 70%);
+}
+
+.title-stack{
+  position:relative;
+  z-index:2;
+  width:max-content;
+  max-width:100%;
+  margin:328px auto 28px;
+}
+.mini-title{
+  width:100%;
+  margin:0 0 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  color:#d8cec0;
+  font-family:var(--font-baskerville);
+  font-size:clamp(16px, 1.55vw, 24px);
+  text-transform:uppercase;
+  font-weight:400;
+  padding:0 .4vw;
+}
+.mini-title span{
+  display:block;
+  letter-spacing:.42em;
+  white-space:nowrap;
+}
+
+.word-block{
+  position:relative;
+  z-index:2;
+  width:min(88vw, 1100px);
+  margin:0 auto;
+  padding:0;
+}
+.hale-svg{
+  width:100%;
+  height:auto;
+  display:block;
+  overflow:visible;
+}
+.hale-fill text{
+  font-family:'Bebas Neue', Impact, sans-serif;
+  font-weight:400;
+  text-transform:uppercase;
+  text-rendering:geometricPrecision;
+}
+.hale-fill #background path{
+  fill:var(--gold);
+  animation:pulse 4s cubic-bezier(0.455, 0.030, 0.515, 0.955) infinite;
+  transform-origin:50% 50%;
+  transform-box:fill-box;
+}
+.hale-fill #background path:nth-child(3n+1){
+  fill:#e3c99a;
+  animation-delay:-1.25s;
+}
+.hale-fill #background path:nth-child(3n+2){
+  fill:#d2b483;
+  animation-delay:-2.4s;
+}
+.hale-fill #background path:nth-child(3n){
+  fill:#c9aa77;
+  animation-delay:-.45s;
+}
+@keyframes pulse{
+  0%,100%{ transform:scale(0) rotate(33deg); }
+  35%,65%{ transform:scale(1) rotate(0deg); }
+}
+
+.bars{
+  position:relative;
+  z-index:2;
+  width:min(100vw, 1120px);
+  margin:0 auto 80px;
+  text-align:center;
+}
+.bar-main,
+.bar-sub{
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.56);
+}
+.bar-main{
+  min-height:92px;
+  width:100%;
+}
+.bar-sub{
+  margin-top:6px;
+  min-height:54px;
+  width:min(92vw, 1010px);
+  background:rgba(0,0,0,.42);
+}
+.service{
+  margin:0;
+  color:#e8dfd2;
+  font-family:var(--font-copperplate);
+  font-size:clamp(14px, 1.42vw, 21px);
+  font-weight:700;
+  letter-spacing:.62em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.motto{
+  margin:0;
+  color:#b6a285;
+  opacity:.5;
+  font-family:var(--font-copperplate);
+  font-size:clamp(12px, 1.1vw, 17px);
+  font-weight:300;
+  letter-spacing:.68em;
+  text-transform:uppercase;
+}
+
+.content{
+  position:relative;
+  z-index:2;
+  width:min(82vw, 850px);
+  margin:0 auto;
+}
+.section-title{
+  margin:0 0 22px;
+  color:#efe6d7;
+  font-family:var(--font-copperplate);
+  font-size:clamp(20px, 1.4vw, 30px);
+  font-weight:700;
+  letter-spacing:.48em;
+  text-transform:uppercase;
+}
+
+.profile-lines{
+  margin:0;
+  padding-left:34px;
+  list-style:none;
+  color:#efe7dd;
+  font-family:var(--font-copperplate), 'Noto Sans KR', sans-serif;
+  font-size:clamp(15px, 1.2vw, 25px);
+  line-height:1.64;
+  letter-spacing:.28em;
+  font-weight:300;
+}
+.profile-lines li{white-space:nowrap}
+
+.divider{
+  width:100%; height:1px;
+  margin:50px 0 40px;
+  background:linear-gradient(90deg, rgba(210,180,131,.64), rgba(210,180,131,.2));
+}
+
+.sign-panel{
+  width:min(100%, 520px);
+}
+.form-title{
+  margin:0 0 18px;
+  color:#efe6d7;
+  font-family:var(--font-copperplate);
+  font-size:clamp(20px, 1.45vw, 32px);
+  font-weight:700;
+  letter-spacing:.48em;
+  text-transform:uppercase;
+}
+.form{
+  display:flex; flex-direction:column; gap:16px;
+}
+.input{
+  width:100%;
+  height:66px;
+  border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(90deg, rgba(255,255,255,.035), rgba(255,255,255,.01));
+  color:#f2ece4;
+  padding:0 16px;
+  font-size:16px;
+  outline:none;
+}
+.input:focus{border-color:rgba(210,180,131,.42); box-shadow:0 0 0 1px rgba(210,180,131,.18) inset}
+.submit{
+  margin-top:8px;
+  width:220px;
+  height:52px;
+  border:1px solid rgba(210,180,131,.24);
+  background:rgba(255,255,255,.02);
+  color:#f1e8dc;
+  font-size:12px;
+  letter-spacing:.34em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.submit:hover{transform:translateY(-1px); border-color:rgba(210,180,131,.42); background:rgba(255,255,255,.04)}
+
+.order{
+  display:none;
+  margin-top:32px;
+  padding:28px 26px;
+  border:1px solid rgba(210,180,131,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+}
+.order.show{display:block}
+.order-head{
+  margin:0 0 16px;
+  color:var(--gold);
+  font-size:12px;
+  letter-spacing:.36em;
+  text-transform:uppercase;
+}
+.order p{
+  margin:0 0 10px;
+  color:#ebe2d6;
+  font-size:15px;
+  line-height:1.75;
+  letter-spacing:.08em;
+}
+.order p:last-child{margin-bottom:0}
+
+.footer-divider{
+  width:100%; height:1px;
+  margin:66px 0 0;
+  background:linear-gradient(90deg, rgba(210,180,131,.5), rgba(210,180,131,.1));
+}
+
+@media (max-width: 1024px){
+  .hero{min-height:1320px; padding-top:96px}
+  .title-stack{margin-top:280px}
+  .service{letter-spacing:.48em}
+  .motto{letter-spacing:.54em}
+  .profile-lines li{white-space:normal}
+}
+@media (max-width: 700px){
+  .shell{width:100vw; margin:0; min-height:100vh; border:none}
+  .shell::before{inset:16px}
+  .topbar{padding:14px 14px 12px}
+  .label,.status{font-size:9px; letter-spacing:.22em; min-height:28px}
+  .hero{min-height:1000px; padding:72px 0 64px}
+  .guide-left{left:16px}.guide-right{right:16px}
+  .watermark{top:120px; width:92vw}
+  .title-stack{margin-top:180px; width:min(92vw, 100%)}
+  .mini-title{font-size:13px; padding:0 6px; gap:6px; align-items:flex-start; flex-wrap:wrap; justify-content:center}
+  .mini-title span{letter-spacing:.26em}
+  .hale{font-size:min(44vw, 10rem); line-height:.8; letter-spacing:.02em}
+  .bar-main{min-height:64px}
+  .bar-sub{min-height:42px}
+  .service{font-size:11px; letter-spacing:.28em; padding:0 10px}
+  .motto{font-size:9px; letter-spacing:.3em}
+  .bars{margin-bottom:56px}
+  .content{width:min(88vw, 92vw)}
+  .section-title{font-size:18px; letter-spacing:.38em}
+  .profile-lines{padding-left:14px; font-size:13px; letter-spacing:.15em; line-height:1.8}
+  .form-title{font-size:18px}
+  .input{height:56px}
+  .submit{width:100%}
+}
+</style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="top-left">
+        <span class="label mark">SIS</span>
+        <span class="label">Internal Network / Restricted Access</span>
+      </div>
+      <div class="top-right">
+        <span class="status"><span class="status-dot"></span>London Node Live</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <span class="guide-left"></span>
+      <span class="guide-right"></span>
+      <div class="watermark" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <div class="title-stack">
+          <div class="mini-title" aria-label="FIRST PROJECT STORY THE HAIL">
+            <span>FIRST</span>
+            <span>PROJECT</span>
+            <span>STORY</span>
+            <span>THE</span>
+            <span>HAIL</span>
+          </div>
+
+          <div class="word-block">
+            <svg class="hale-svg hale-fill" viewBox="0 0 700 225" role="img" aria-label="HALE">
+              <defs>
+                <clipPath id="haleTextClip">
+                  <text x="350" y="186" text-anchor="middle" font-size="218" letter-spacing="2">HALE</text>
+                </clipPath>
+              </defs>
+              <g id="background" clip-path="url(#haleTextClip)">
+
+              <path d="m445.62-26.657c-19.58 20.137-3.6309 59.698 27.377 73.932 31.007 14.234 67.049-14.123 72.974-27.02 5.9253-12.875-13.142-59.988-24.058-65.022-10.937-5.012-42.19-16.996-76.294 18.11z"/>
+              <path d="m449.78 166.4c20.137 19.58 59.698 3.6309 73.932-27.377 14.234-31.007-14.123-67.071-27.02-72.974-12.875-5.9253-3.5418 38.759-20.382 59.364-15.704 19.201-61.636 6.8608-26.53 40.987z"/>
+              <path d="m299.4 7.4916c15.704-7.5959-10.269-35.128-31.297-38.002-20.983-2.8513-44.395 14.835-51.969 26.597-10.848 16.863 2.3389 30.785 9.7344 31.787 7.3954 1.0024 53.238-10.581 73.531-20.382z"/>
+              <path d="m-23.125 15.756c-25.35 12.096-24.124 54.709 0 78.833 24.124 24.124 67.806 10.024 77.83 0 10.024-10.024 8.4869-60.834 0-69.321-8.487-8.487-33.658-30.584-77.83-9.5116z"/>
+              <path d="m354 213.43c9.378-26.463-21.629-55.755-55.755-55.755-34.126 0-55.02 40.853-55.02 55.02 0 14.167 37 49.028 49.028 49.028 12.006 0 45.397-2.1607 61.748-48.293z"/>
+              <path d="m269.57 39.746c-26.463-9.3557-55.756 21.629-55.756 55.755 0 34.126 40.853 55.02 55.02 55.02s-12.964-36.71-6.2816-62.438c6.2594-24.013 53.149-31.988 7.0167-48.338z"/>
+              <path d="m396.7 253.28c22.676 16.551 42.123-41.187 30.272-73.197-11.851-32.01-54.686-51.857-77.118-53.706-32.188-2.6508-41.967 26.641-37.802 37.913 4.1878 11.271 55.355 67.584 84.647 88.99z"/>
+              <path d="m368.92 42.13c-17.442 0.33414-5.3461 36.22 12.563 47.58 17.909 11.36 46.556 5.0788 58.339-2.4503 16.907-10.804 10.737-28.958 4.4328-32.968-6.3039-3.9873-52.793-12.586-75.336-12.162z"/>
+              <path d="m409.18 183.25c-17.442 0.33413-5.3461 36.22 12.563 47.58 17.887 11.383 46.556 5.0788 58.34-2.4503 16.907-10.804 10.737-28.958 4.4328-32.968-6.304-3.9873-52.771-12.586-75.336-12.162z"/>
+              <path d="m110.44 135.06c-25.349 12.096-24.124 54.709 0 78.833 24.124 24.124 67.806 10.024 77.83 0 10.024-10.024 8.4869-60.834 0-69.321-8.5093-8.487-33.658-30.584-77.83-9.5116z"/>
+              <path d="m134.41-33.696c-25.35 12.096-24.124 54.709 0 78.833 24.124 24.124 67.806 10.024 77.83 0 10.024-10.024 8.4869-60.834 0-69.321-8.5092-8.4869-33.658-30.584-77.83-9.5116z"/>
+              <path d="m71.301 148.81c12.096 25.349 54.708 24.124 78.833 0 24.124-24.124 10.024-67.807 0-77.83-10.024-10.024-16.774 35.128-39.717 48.583-21.407 12.586-60.188-14.925-39.116 29.248z"/>
+              <path d="m132.74 79.753c3.4973 27.844 50.031 16.194 74.155-7.9301 24.124-24.124 17.553-32.789 7.5291-42.836-10.024-10.046-24.303 0.13365-47.246 13.588-21.407 12.608-38.18 7.3955-34.438 37.178z"/>
+              <path d="m52.501 109.18c-27.844 3.4972-16.194 50.031 7.9301 74.155 24.124 24.124 32.79 17.553 42.836 7.5291 10.046-10.024-0.1337-24.303-13.588-47.246-12.608-21.429-7.3955-38.18-37.178-34.438z"/>
+              <path d="m137.44 89.51c23.389-15.504-20.939-25.951-55.065-25.951-34.126 0-70.68 5.4352-80.192 25.817-13.655 29.27 10.425 48.605 22.431 48.605s82.575-28.423 112.83-48.471z"/>
+              <path d="m171.61 118.56c23.389-15.504-20.939-25.951-55.065-25.951-34.126 0-70.68 5.4352-80.192 25.817-13.655 29.27 10.425 48.605 22.431 48.605s82.575-28.423 112.83-48.471z"/>
+              <path d="m273.56 120.12c23.389-15.504-20.939-25.951-55.065-25.951s-70.68 5.4352-80.192 25.817c-13.655 29.27 10.425 48.605 22.431 48.605 12.006 0.0223 82.575-28.423 112.83-48.471z"/>
+              <path d="m102.51 97.173c15.504 23.389 53.795-24.013 53.795-58.139 0-34.126-33.28-67.606-53.684-77.14-29.27-13.655-48.605 10.425-48.605 22.431 0 12.006 28.446 82.597 48.494 112.85z"/>
+              <path d="m15.1 236.39c15.504 23.389 53.795-24.013 53.795-58.139s-33.28-67.606-53.662-77.118c-29.27-13.655-48.605 10.425-48.605 22.431 0 12.006 28.424 82.575 48.471 112.83z"/>
+              <path d="m38.601 4.2171c-16.484-5.7471-17.575 32.099-4.7447 48.984 12.831 16.885 41.9 20.917 55.555 17.954 19.602-4.2546 20.115-23.434 15.593-29.381-4.5219-5.9253-45.108-30.139-66.403-37.556z"/>
+              <path d="m48.068 156.65c-16.484-5.7471-17.575 32.099-4.7447 48.984 12.831 16.885 41.9 20.917 55.555 17.954 19.602-4.2546 20.115-23.434 15.593-29.381-4.522-5.9253-45.13-30.139-66.403-37.556z"/>
+              <path d="m430.43 67.056c9.3779-26.463-21.63-55.755-55.756-55.755s-55.02 40.853-55.02 55.02c0 14.167 37 49.028 49.028 49.028 12.006 0.0223 45.397-2.1384 61.748-48.293z"/>
+              <path d="m251.62 77.147c9.378-26.463-21.63-55.755-55.756-55.755s-55.02 40.853-55.02 55.02c0 14.167 37 49.051 49.006 49.051 12.029 0 45.42-2.1607 61.77-48.315z"/>
+              <path d="m274.94 132.01c-22.164-17.219-46.823 23.924-46.823 58.028s10.781 35.596 24.971 35.596 17.108-17.263 23.79-43.014c6.2371-24.013 21.785-32.166-1.938-50.61z"/>
+              <path d="m310.9 54.493c17.219-22.164-23.924-46.823-58.028-46.823-34.104 0-35.618 10.781-35.618 24.949 0 14.167 17.263 17.108 43.014 23.79 24.035 6.2594 32.21 21.785 50.632-1.9157z"/>
+              <path d="m264.74 128.47c-5.5689 27.51 33.146 3.5418 57.27-20.583 24.124-24.124 46.132-53.84 38.447-74.979-11.026-30.361-41.722-26.998-50.209-18.511-8.4869 8.487-38.314 78.499-45.509 114.07z"/>
+              <path d="m220.03 132.08c-5.5689 27.51 33.146 3.5418 57.27-20.583 24.124-24.124 46.132-53.818 38.448-74.979-11.026-30.361-41.722-26.998-50.209-18.511-8.5093 8.487-38.292 78.499-45.509 114.07z"/>
+              <path d="m162.34 234.95c-5.7316 28.402 34.114 3.6566 58.943-21.25 24.829-24.906 47.48-55.562 39.571-77.409-11.348-31.322-42.941-27.873-51.698-19.111-8.7119 8.785-39.387 81.043-46.815 117.77z"/>
+              <path d="m284.01 98.331c-27.51-5.5689-21.073 55.02 3.074 79.145 24.147 24.124 71.348 24.28 92.488 16.573 30.339-11.026 26.998-41.722 18.511-50.231-8.487-8.487-78.499-38.269-114.07-45.487z"/>
+              <path d="m281.49-61.362c-27.51-5.5689-21.073 55.02 3.074 79.145 24.147 24.124 71.348 24.28 92.488 16.573 30.339-11.026 26.998-41.722 18.511-50.231-8.487-8.5092-78.499-38.292-114.07-45.486z"/>
+              <path d="m394.94 118.87c15.704-7.5959-10.269-35.128-31.297-38.002-21.006-2.8513-44.417 14.835-51.991 26.597-10.848 16.863 2.3389 30.785 9.7344 31.809 7.4177 1.0024 53.261-10.581 73.554-20.404z"/>
+              <path d="m315.04 74.385c-19.58 20.137-3.6309 59.698 27.376 73.932 31.007 14.234 67.071-14.123 72.974-27.02 5.9253-12.875-13.142-59.988-24.058-65.022-10.915-5.0342-42.167-16.974-76.293 18.11z"/>
+              <path d="m483.42 148.49c-19.58 20.137-3.6309 59.698 27.376 73.932 31.008 14.256 67.072-14.123 72.974-27.02 5.9252-12.875-13.143-59.988-24.058-65.022-10.915-5.012-42.167-16.996-76.293 18.11z"/>
+              <path d="m483.42 80.31c12.942 24.904 52.548-2.1607 66.782-33.168 14.256-31.007 5.0788-36.844-7.8187-42.769-12.875-5.9253-22.743 8.5538-39.584 29.136-15.682 19.224-33.213 20.159-19.38 46.801z"/>
+              <path d="m418.38 135.75c-24.904 12.942 2.1608 52.548 33.168 66.782 31.007 14.234 36.844 5.0788 42.769-7.8187 5.9253-12.898-8.5538-22.743-29.136-39.584-19.224-15.704-20.137-33.235-46.801-19.38z"/>
+              <path d="m491.22 87.817c16.551-22.676-28.646-17.063-60.634-5.2347-31.988 11.828-64.398 29.626-66.247 52.058-2.6508 32.188 26.641 41.967 37.913 37.801 11.249-4.1655 67.562-55.332 88.968-84.624z"/>
+              <path d="m533.34 103.21c16.551-22.676-28.646-17.063-60.634-5.2347-31.988 11.828-64.398 29.626-66.247 52.058-2.6508 32.188 26.641 41.967 37.913 37.801 11.249-4.1655 67.562-55.31 88.968-84.624z"/>
+              <path d="m625.47 49.548c16.551-22.676-28.646-17.063-60.634-5.2347-32.01 11.851-64.398 29.626-66.247 52.058-2.6508 32.188 26.641 41.967 37.913 37.801 11.249-4.1655 67.562-55.332 88.968-84.625z"/>
+              <path d="m461.12 107.13c22.676 16.551 42.123-41.187 30.272-73.197-11.85-32.01-54.686-51.835-77.118-53.684-32.166-2.6508-41.945 26.619-37.779 37.891 4.1655 11.271 55.31 67.584 84.624 88.99z"/>
+              <path d="m601.9 237.96c-15.704 7.5959 10.269 35.128 31.297 38.002 20.983 2.8513 44.395-14.835 51.969-26.597 10.848-16.863-2.3389-30.785-9.7344-31.787-7.3954-1.0024-53.238 10.581-73.531 20.382z"/>
+              <path d="m547.3 32.024c-9.378 26.463 21.629 55.755 55.755 55.755 34.126 0 55.02-40.853 55.02-55.02 0-14.167-37-49.028-49.028-49.028-12.006 0-45.397 2.1607-61.748 48.293z"/>
+              <path d="m631.73 205.71c26.463 9.3557 55.756-21.629 55.756-55.755 0-34.126-40.853-55.02-55.02-55.02s12.964 36.71 6.2816 62.438c-6.2594 24.013-53.149 31.988-7.0167 48.338z"/>
+              <path d="m727.75 39.036c16.761-4.837-4.2105-36.369-24.45-42.708-20.224-6.3654-46.284 7.1438-55.717 17.466-13.535 14.811-2.876 30.75 4.2509 32.992 7.1212 2.2198 54.23-1.5013 75.916-7.7503z"/>
+              <path d="m731.16 87.29c20.706-18.947-15.688-50.198-49.322-55.922-33.635-5.7237-36.903 4.6301-39.288 18.622-2.3853 13.992 14.149 19.754 38.388 30.694 22.633 10.194 28.053 26.891 50.222 6.6064z"/>
+              <path d="m628.53 148.48c-10.118 26.187 32.086 9.0674 59.923-10.637 27.836-19.704 54.536-45.284 50.516-67.43-5.7704-31.777-36.595-33.642-46.405-26.701-9.7877 6.9351-50.944 70.912-64.034 104.77z"/>
+              <path d="m618.21 182.56c27.616-5.1225 37.462-46.601 20.403-76.147-17.058-29.546-62.902-27.232-75.178-20.144-12.277 7.088-23.943 56.565-17.942 66.959 6.0012 10.394 24.596 38.253 72.717 29.332z"/>
+              <path d="m569.35 72.75c27.801 3.8286 28.591-44.135 11.533-73.681-17.058-29.546-27.129-25.442-39.427-18.359-12.298 7.0822-6.1608 23.509 0.89676 49.153 6.6322 23.962-2.7382 38.793 26.998 42.887z"/>
+              <path d="m555.61 177.73c14.435 9.8176 25.284-26.456 17.261-46.087-8.0234-19.63-35.059-31.049-49.015-31.721-20.036-0.96383-25.494 17.429-22.666 24.344 2.8342 6.8937 35.77 40.787 54.42 53.463z"/>
+              <path d="m250.61 235.97c27.616-5.1225 37.462-46.601 20.403-76.147-17.058-29.546-62.902-27.232-75.178-20.144-12.277 7.088-23.943 56.565-17.942 66.959 6.0012 10.394 24.596 38.253 72.717 29.332z"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="bars">
+          <div class="bar-main">
+            <p class="service">SIS: SECRET INTELLIGENCE SERVICE</p>
+          </div>
+          <div class="bar-sub">
+            <p class="motto">SEMPER OCCULTUS</p>
+          </div>
+        </div>
+
+        <div class="content">
+          <h2 class="section-title">PROFILE</h2>
+          <ul class="profile-lines">
+            <li>1992년 12월 출생</li>
+            <li>2010년 10월: 케임브리지 행동+심리학과(PBS) 입학</li>
+            <li>2013년 6월: 학부 수석 졸업</li>
+            <li>2013년 10월: 대학원 박사과정(PHD) 시작</li>
+            <li>2016년 6월: 논문 최종 통과</li>
+            <li>2016년 7월: 졸업 2일 전 MI6 스카웃</li>
+            <li>2016년 9월: MI6 합류</li>
+          </ul>
+
+          <div class="divider"></div>
+
+          <div class="sign-panel">
+            <h2 class="form-title">SECURE SIGN-IN</h2>
+            <form class="form" id="accessForm">
+              <input class="input" type="text" name="agent" aria-label="Agent Identifier" />
+              <input class="input" type="password" name="passphrase" aria-label="Passphrase" />
+              <button class="submit" type="submit">PROCEED</button>
+            </form>
+
+            <section class="order" id="orderPanel">
+              <h3 class="order-head">Restricted Directive / Noel Hale</h3>
+              <p>26.03.20 / 15:30</p>
+              <p>Kensington Mews House, No. XX</p>
+              <p>정문으로 오지 마세요. 북측 골목으로 들어오면 됩니다.</p>
+              <p>늦지 마세요.</p>
+            </section>
+          </div>
+
+          <div class="footer-divider"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+const form = document.getElementById('accessForm');
+const panel = document.getElementById('orderPanel');
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+});
+</script>
+</body>
+</html>
