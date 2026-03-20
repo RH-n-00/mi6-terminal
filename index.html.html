@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIS Secure Terminal</title>
+  <style>
+    :root{
+      --bg:#050707;
+      --panel:#0a0f0f;
+      --panel2:#0d1515;
+      --line:#183232;
+      --line2:#295555;
+      --text:#d8efe9;
+      --muted:#7fa49e;
+      --accent:#8af0d7;
+      --accent2:#57c9b0;
+      --danger:#d7b284;
+      --shadow:0 0 0 1px rgba(138,240,215,.08), 0 24px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:radial-gradient(circle at top, #0a1111 0%, #050707 45%, #020303 100%);color:var(--text);font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;min-height:100%}
+    body{overflow-x:hidden}
+    body::before{
+      content:""; position:fixed; inset:0; pointer-events:none; opacity:.06;
+      background-image:linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size:100% 3px, 3px 100%; mix-blend-mode:screen;
+    }
+    body::after{
+      content:""; position:fixed; inset:0; pointer-events:none;
+      background:linear-gradient(to bottom, rgba(255,255,255,.03), transparent 8%, transparent 92%, rgba(255,255,255,.02));
+      opacity:.08;
+    }
+    .wrap{min-height:100vh; display:grid; place-items:center; padding:24px}
+    .shell{
+      width:min(980px, 100%); background:linear-gradient(180deg, rgba(10,15,15,.92), rgba(7,10,10,.96));
+      border:1px solid rgba(138,240,215,.12); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; position:relative;
+    }
+    .shell::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(circle at 10% 0%, rgba(138,240,215,.10), transparent 28%), radial-gradient(circle at 100% 0%, rgba(87,201,176,.08), transparent 25%);
+    }
+    .topbar{display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid rgba(138,240,215,.1); background:rgba(255,255,255,.015); backdrop-filter: blur(8px)}
+    .brand{display:flex; gap:14px; align-items:center}
+    .crest{
+      width:42px; height:42px; border-radius:12px; border:1px solid rgba(138,240,215,.18); display:grid; place-items:center;
+      color:var(--accent); font-size:18px; background:linear-gradient(180deg, rgba(138,240,215,.06), rgba(138,240,215,.02));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 0 24px rgba(138,240,215,.06);
+    }
+    .brand h1{margin:0; font-size:13px; font-weight:700; letter-spacing:.18em; text-transform:uppercase}
+    .brand p{margin:3px 0 0; font-size:11px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase}
+    .status{display:flex; gap:10px; align-items:center; font-size:11px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--accent); box-shadow:0 0 14px rgba(138,240,215,.65)}
+    .main{display:grid; grid-template-columns:1.05fr .95fr}
+    @media (max-width: 860px){.main{grid-template-columns:1fr}}
+    .left,.right{padding:28px}
+    .left{border-right:1px solid rgba(138,240,215,.08)}
+    @media (max-width: 860px){.left{border-right:none; border-bottom:1px solid rgba(138,240,215,.08)}}
+    .eyebrow{font-size:11px; color:var(--accent); letter-spacing:.18em; text-transform:uppercase; margin-bottom:14px}
+    .title{font-size:clamp(26px, 4vw, 46px); line-height:1.04; margin:0 0 16px; letter-spacing:-.03em}
+    .subtitle{max-width:58ch; color:#a8c6c0; line-height:1.7; font-size:14px; margin:0 0 24px}
+    .grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin:22px 0 4px}
+    @media (max-width: 560px){.grid{grid-template-columns:1fr}}
+    .stat{padding:14px 16px; border:1px solid rgba(138,240,215,.08); border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01))}
+    .stat .k{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.14em; margin-bottom:8px}
+    .stat .v{font-size:13px; line-height:1.5}
+    .terminal{
+      background:linear-gradient(180deg, rgba(8,12,12,.98), rgba(6,9,9,.98)); border:1px solid rgba(138,240,215,.1); border-radius:20px; padding:18px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.01);
+    }
+    .terminal-head{display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; margin-bottom:16px; border-bottom:1px dashed rgba(138,240,215,.12)}
+    .terminal-head strong{font-size:12px; letter-spacing:.16em; text-transform:uppercase}
+    .small{font-size:10px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase}
+    .field{margin-bottom:12px}
+    label{display:block; font-size:11px; color:var(--muted); letter-spacing:.14em; text-transform:uppercase; margin-bottom:8px}
+    input{
+      width:100%; background:#071010; color:var(--text); border:1px solid rgba(138,240,215,.12); border-radius:14px;
+      padding:14px 14px; font-size:14px; outline:none; transition:.2s ease; box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+    input::placeholder{color:#64857f}
+    input:focus{border-color:rgba(138,240,215,.32); box-shadow:0 0 0 3px rgba(138,240,215,.08)}
+    .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap}
+    button{
+      appearance:none; border:none; border-radius:14px; cursor:pointer; padding:13px 16px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:11px;
+      transition:transform .12s ease, filter .2s ease, background .2s ease;
+    }
+    button:hover{filter:brightness(1.08)}
+    button:active{transform:translateY(1px)}
+    .primary{background:linear-gradient(180deg, var(--accent), var(--accent2)); color:#05221b; min-width:148px}
+    .secondary{background:#0b1515; color:#b4d7d0; border:1px solid rgba(138,240,215,.1)}
+    .hint{margin-top:14px; color:#86a8a2; font-size:12px; line-height:1.6}
+    .console{
+      margin-top:18px; min-height:240px; border-radius:16px; padding:16px; background:linear-gradient(180deg, rgba(3,6,6,.75), rgba(4,8,8,.9));
+      border:1px solid rgba(138,240,215,.08); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:13px; line-height:1.72; color:#ccebe3; white-space:pre-wrap;
+      position:relative; overflow:hidden;
+    }
+    .console::before{
+      content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(to bottom, rgba(138,240,215,.03), transparent 12%, transparent 88%, rgba(138,240,215,.02));
+    }
+    .caret{display:inline-block; width:9px; height:1.1em; background:var(--accent); vertical-align:-2px; margin-left:4px; animation:blink 1s step-end infinite}
+    @keyframes blink{50%{opacity:0}}
+    .hidden{display:none}
+    .briefing-card{
+      margin-top:18px; border-radius:18px; border:1px solid rgba(215,178,132,.16); background:linear-gradient(180deg, rgba(215,178,132,.06), rgba(215,178,132,.02));
+      padding:18px;
+    }
+    .briefing-card h3{margin:0 0 14px; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#f0d1a8}
+    .rows{display:grid; gap:10px}
+    .row{display:grid; grid-template-columns:120px 1fr; gap:10px; align-items:start; padding:8px 0; border-bottom:1px dashed rgba(215,178,132,.10)}
+    .row:last-child{border-bottom:none}
+    .row .k{font-size:11px; color:#c6a67c; letter-spacing:.12em; text-transform:uppercase}
+    .row .v{font-size:14px; line-height:1.65}
+    @media (max-width: 560px){.row{grid-template-columns:1fr}.row .k{margin-bottom:2px}}
+    .note{margin-top:16px; color:#9dbcb6; font-size:12px; line-height:1.7}
+    .footer{padding:16px 22px; border-top:1px solid rgba(138,240,215,.08); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; color:#789b95; font-size:11px; letter-spacing:.12em; text-transform:uppercase}
+    .chip{display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 10px; border:1px solid rgba(138,240,215,.08); background:rgba(255,255,255,.02)}
+    .pulse{animation:pulse 2.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(138,240,215,.10)}50%{box-shadow:0 0 0 8px rgba(138,240,215,0)}}
+    .glitch{position:relative}
+    .glitch::before,.glitch::after{content:attr(data-text); position:absolute; inset:0; pointer-events:none; opacity:0}
+    .accessing .glitch::before{opacity:.18; transform:translate(1px,0); color:#8cf4d6; clip-path:inset(0 0 58% 0)}
+    .accessing .glitch::after{opacity:.18; transform:translate(-1px,0); color:#d1fff2; clip-path:inset(62% 0 0 0)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="shell" id="shell">
+      <div class="topbar">
+        <div class="brand">
+          <div class="crest">⌖</div>
+          <div>
+            <h1>Secret Intelligence Service</h1>
+            <p>Restricted Access Terminal · London Node</p>
+          </div>
+        </div>
+        <div class="status"><span class="dot pulse"></span> Secure uplink established</div>
+      </div>
+
+      <div class="main">
+        <section class="left">
+          <div class="eyebrow">Section six · controlled access</div>
+          <h2 class="title glitch" data-text="Secure Briefing Gateway">Secure Briefing Gateway</h2>
+          <p class="subtitle">
+            승인된 인원만 접근 가능한 임시 브리핑 게이트웨이입니다. 입력값은 현장 검증이 아닌 접속 연출용으로만 처리됩니다.
+            모바일에서도 정상 작동하도록 단일 페이지로 구성했습니다.
+          </p>
+
+          <div class="grid">
+            <div class="stat">
+              <div class="k">Clearance</div>
+              <div class="v">Field Induction / Junior NOC</div>
+            </div>
+            <div class="stat">
+              <div class="k">Region</div>
+              <div class="v">Greater London Operations Desk</div>
+            </div>
+            <div class="stat">
+              <div class="k">Protocol</div>
+              <div class="v">Low-Profile Human Access</div>
+            </div>
+            <div class="stat">
+              <div class="k">Status</div>
+              <div class="v">Time-sensitive tasking package</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="right">
+          <div class="terminal">
+            <div class="terminal-head">
+              <strong>SIS Secure Sign-In</strong>
+              <span class="small">single-use node</span>
+            </div>
+
+            <div id="loginView">
+              <div class="field">
+                <label for="agentName">Operative Name</label>
+                <input id="agentName" type="text" placeholder="Enter operative name" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="agentCode">Validation String</label>
+                <input id="agentCode" type="password" placeholder="Any entry accepted" autocomplete="off" />
+              </div>
+              <div class="actions">
+                <button class="primary" id="accessBtn">Request Access</button>
+                <button class="secondary" id="autofillBtn" type="button">Use Placeholder</button>
+              </div>
+              <div class="hint">
+                입력값은 실제 인증에 사용되지 않습니다. 연출상 접근 절차만 재현하며, 어떤 문구를 입력해도 브리핑 화면으로 이동합니다.
+              </div>
+            </div>
+
+            <div id="briefingView" class="hidden">
+              <div class="console" id="console"></div>
+              <div class="briefing-card hidden" id="briefingCard">
+                <h3>Restricted Tasking</h3>
+                <div class="rows">
+                  <div class="row"><div class="k">From</div><div class="v">Noel Hale</div></div>
+                  <div class="row"><div class="k">Date</div><div class="v" id="briefDate">26.03.20</div></div>
+                  <div class="row"><div class="k">Time</div><div class="v" id="briefTime">15:30</div></div>
+                  <div class="row"><div class="k">Location</div><div class="v" id="briefLocation">Kensington Mews House, No. XX</div></div>
+                  <div class="row"><div class="k">Instruction</div><div class="v" id="briefInstruction">도착 즉시 노출을 최소화한 채 벨을 한 번만 누르세요. 질문은 현장에서 받겠습니다.</div></div>
+                </div>
+                <div class="note">
+                  이 페이지를 닫고 채팅으로 돌아가면, 해당 시간과 장소에서 프롤로그를 바로 시작할 수 있습니다.
+                </div>
+                <div class="actions" style="margin-top:18px">
+                  <button class="primary" id="restartBtn" type="button">Reset Terminal</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <div class="chip">Embassy-grade visual shell</div>
+        <div class="chip">Mobile-ready / single file</div>
+        <div class="chip">Fictional access page</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      sender: 'Noel Hale',
+      date: '26.03.20',
+      time: '15:30',
+      location: 'Kensington Mews House, No. XX',
+      instruction: '도착 즉시 노출을 최소화한 채 벨을 한 번만 누르세요. 질문은 현장에서 받겠습니다.',
+      openLine: 'SIS LONDON NODE // SECURE ACCESS CHANNEL OPEN',
+      nodeLine: 'ROUTE: TEMPORARY FIELD GATEWAY // PRIORITY: AMBER',
+      clearanceLine: 'CLEARANCE TOKEN ACCEPTED // JUNIOR NOC INDUCTION PACKAGE',
+      sealLine: 'AUTHORISED COMMUNICATION // HANDLER IDENT CONFIRMED'
+    };
+
+    const loginView = document.getElementById('loginView');
+    const briefingView = document.getElementById('briefingView');
+    const consoleEl = document.getElementById('console');
+    const briefingCard = document.getElementById('briefingCard');
+    const accessBtn = document.getElementById('accessBtn');
+    const autofillBtn = document.getElementById('autofillBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const agentName = document.getElementById('agentName');
+    const agentCode = document.getElementById('agentCode');
+    const shell = document.getElementById('shell');
+
+    document.getElementById('briefDate').textContent = CONFIG.date;
+    document.getElementById('briefTime').textContent = CONFIG.time;
+    document.getElementById('briefLocation').textContent = CONFIG.location;
+    document.getElementById('briefInstruction').textContent = CONFIG.instruction;
+
+    function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+    async function typeLine(text, delay = 14){
+      for (const ch of text) {
+        consoleEl.textContent += ch;
+        await sleep(delay + Math.random() * 8);
+      }
+      consoleEl.textContent += '\n';
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    async function bootSequence(name){
+      shell.classList.add('accessing');
+      consoleEl.textContent = '';
+      await typeLine(CONFIG.openLine, 10);
+      await typeLine(CONFIG.nodeLine, 12);
+      await sleep(180);
+      await typeLine('VALIDATING LOCAL ENTRY VECTOR ...', 10);
+      await sleep(280);
+      await typeLine(CONFIG.clearanceLine, 10);
+      await typeLine(CONFIG.sealLine, 10);
+      await sleep(260);
+      await typeLine('OPERATIVE: ' + (name || 'UNSPECIFIED ENTRY'), 11);
+      await typeLine('HANDLER: ' + CONFIG.sender.toUpperCase(), 11);
+      await typeLine('PACKAGE STATUS: RELEASED', 11);
+      await sleep(300);
+      await typeLine('—', 18);
+      await sleep(180);
+      await typeLine(CONFIG.sender + '.', 18);
+      await typeLine(CONFIG.date + ' / ' + CONFIG.time, 18);
+      await typeLine(CONFIG.location, 18);
+      await sleep(220);
+      await typeLine(CONFIG.instruction, 18);
+      await typeLine('Return to the active channel when ready.', 18);
+      consoleEl.innerHTML = consoleEl.innerHTML + '<span class="caret"></span>';
+      shell.classList.remove('accessing');
+      briefingCard.classList.remove('hidden');
+    }
+
+    async function requestAccess(){
+      loginView.classList.add('hidden');
+      briefingView.classList.remove('hidden');
+      await bootSequence(agentName.value.trim());
+    }
+
+    accessBtn.addEventListener('click', requestAccess);
+    autofillBtn.addEventListener('click', () => {
+      agentName.value = 'Operative Entry';
+      agentCode.value = 'LONDON-NODE';
+      agentName.focus();
+    });
+    restartBtn.addEventListener('click', () => {
+      briefingView.classList.add('hidden');
+      briefingCard.classList.add('hidden');
+      loginView.classList.remove('hidden');
+      consoleEl.textContent = '';
+      agentCode.value = '';
+      shell.classList.remove('accessing');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+
+    [agentName, agentCode].forEach(el => {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          requestAccess();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
