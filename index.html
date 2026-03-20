@@ -2,280 +2,212 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-width=1.0">
-    <title>SIS Secure Intranet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS Secure Intranet - SPECTER</title>
     <style>
-        /* 기본 세팅: 차갑고 세련된 다크 테마 */
+        :root {
+            --primary-blue: #00a8ff;
+            --danger-red: #ff4757;
+            --bg-dark: #020408;
+            --glass-bg: rgba(10, 20, 35, 0.8);
+            --border-color: rgba(0, 168, 255, 0.2);
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background-color: #05070a;
-            color: #d1d5db;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: #f1f2f6;
+            font-family: 'Inter', 'Helvetica Neue', sans-serif;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
         }
 
-        /* 워터마크 (사자와 유니콘 로고) */
-        .bg-watermark {
+        /* 1. 시네마틱 배경: 스캔라인 및 그리드 효과 */
+        .bg-fx {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #0a1423 0%, #020408 100%);
+            z-index: -2;
+        }
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* 2. 워터마크: 시인성 개선 (투명도 조절) */
+        .watermark {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 60vh;
-            opacity: 0.03; /* 매우 연하게 설정하여 세련미 강조 */
+            width: 70vh;
+            opacity: 0.08; /* 시인성 확보 */
+            filter: drop-shadow(0 0 10px var(--primary-blue));
             pointer-events: none;
             z-index: 0;
-            filter: grayscale(100%);
         }
 
-        /* 메인 컨테이너 */
-        .container {
+        /* 3. 메인 인터페이스 (글래스모피즘) */
+        .interface-card {
             position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            background: rgba(10, 15, 20, 0.7);
-            border: 1px solid #1f2937;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            padding: 3rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 168, 255, 0.05);
+            text-align: center;
+            animation: fadeIn 1.5s ease-out;
         }
 
-        /* 헤더 스타일 */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 1px solid #374151;
-            padding-bottom: 20px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .header h1 {
-            font-size: 1.2rem;
-            letter-spacing: 4px;
-            color: #9ca3af;
+            font-size: 1rem;
+            letter-spacing: 0.5rem;
+            color: var(--primary-blue);
             margin: 0;
-            font-weight: 400;
+            text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
         }
         .header p {
-            font-size: 0.7rem;
-            color: #ef4444; /* 경고를 의미하는 차분한 붉은색 */
-            letter-spacing: 1px;
-            margin-top: 5px;
+            font-size: 0.65rem;
+            color: var(--danger-red);
+            text-transform: uppercase;
+            margin-top: 10px;
+            opacity: 0.8;
         }
 
-        /* 로그인 폼 */
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: #6b7280;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-        .input-group input {
-            width: 100%;
+        /* 4. 버튼 디자인 (존 윅 스타일의 세련된 선 처리) */
+        .nav-menu { margin-top: 3rem; display: flex; flex-direction: column; gap: 1rem; }
+        .btn {
             background: transparent;
-            border: none;
-            border-bottom: 1px solid #4b5563;
-            color: #f3f4f6;
-            font-size: 1rem;
-            padding: 8px 0;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        .input-group input:focus {
-            border-bottom: 1px solid #60a5fa; /* 포커스 시 얼음 같은 파란색 */
-        }
-        button {
-            width: 100%;
-            background: #111827;
-            color: #9ca3af;
-            border: 1px solid #374151;
-            padding: 12px;
-            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            color: #ced4da;
+            padding: 1rem;
+            font-size: 0.8rem;
             letter-spacing: 2px;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-        }
-        button:hover {
-            background: #1f2937;
-            color: #f3f4f6;
-            border-color: #60a5fa;
-        }
-
-        /* 로딩 바 */
-        .loader-container {
-            display: none;
-            text-align: center;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 2px;
-            background: #1f2937;
-            margin-top: 20px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             position: relative;
             overflow: hidden;
         }
-        .progress {
-            width: 0%;
-            height: 100%;
-            background: #60a5fa;
-            transition: width 2s ease-in-out;
+        .btn:hover {
+            color: white;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 15px rgba(0, 168, 255, 0.3);
+            background: rgba(0, 168, 255, 0.05);
         }
 
-        /* 프로필 및 기밀 문서 (Redacted) 효과 */
-        .dossier-container {
-            display: none;
-            font-size: 0.9rem;
-            line-height: 1.8;
-        }
-        .dossier-title {
-            color: #60a5fa;
-            margin-bottom: 20px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        .profile-pic-placeholder {
-            width: 100px;
-            height: 100px;
-            background: #1f2937;
-            float: left;
-            margin-right: 20px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            color: #4b5563;
-        }
+        /* 5. 내부 문서 (Dossier) 스타일 */
+        .dossier, .login-form, .briefing-result { display: none; text-align: left; }
         .redacted {
-            background-color: #1a1a1a;
-            color: #1a1a1a;
-            padding: 0 4px;
-            border-radius: 2px;
-            cursor: default;
-            user-select: none;
-            transition: color 0.3s ease;
+            background: #111;
+            color: #111;
+            padding: 0 5px;
+            cursor: help;
+            transition: color 0.3s;
         }
-        /* 마우스를 올리면 글자가 살짝 보임 */
-        .redacted:hover {
-            color: #4b5563; 
-        }
+        .redacted:hover { color: #555; }
 
-        /* 타이핑 이펙트용 커서 */
-        .typewriter {
-            margin-top: 30px;
-            border-top: 1px dashed #374151;
-            padding-top: 20px;
-            color: #60a5fa;
-            font-family: 'Courier New', Courier, monospace;
+        /* 입력 폼 스타일 */
+        input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: none;
+            border-bottom: 1px solid #333;
+            color: white;
+            padding: 10px 0;
+            margin: 1rem 0;
+            outline: none;
+            font-size: 0.9rem;
         }
-        .cursor {
-            animation: blink 1s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        .hidden { display: none; }
+        input:focus { border-bottom: 1px solid var(--primary-blue); }
+
+        .typing { font-family: 'Courier New', monospace; color: var(--primary-blue); line-height: 1.6; font-size: 0.85rem; }
+        .back-btn { margin-top: 2rem; font-size: 0.6rem; opacity: 0.5; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Royal_Coat_of_Arms_of_the_United_Kingdom.svg" alt="MI6 Logo" class="bg-watermark">
+    <div class="bg-fx"></div>
+    <div class="bg-grid"></div>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Royal_Coat_of_Arms_of_the_United_Kingdom.svg" class="watermark">
 
-    <div class="container" id="main-box">
+    <div class="interface-card" id="main-ui">
         <div class="header">
             <h1>SECRET INTELLIGENCE SERVICE</h1>
-            <p>UNAUTHORIZED ACCESS STRICTLY PROHIBITED</p>
+            <p>Classified Network Access Only</p>
         </div>
 
-        <div id="login-screen">
-            <div class="input-group">
-                <label>CODENAME</label>
-                <input type="text" id="codename" autocomplete="off" placeholder="Enter codename">
-            </div>
-            <div class="input-group">
-                <label>IDENTIFICATION NUMBER</label>
-                <input type="password" id="id-number" autocomplete="off" placeholder="Enter ID number">
-            </div>
-            <button onclick="startAuthentication()">AUTHORIZE ACCESS</button>
+        <div id="home-menu" class="nav-menu">
+            <button class="btn" onclick="showSection('dossier')">VIEW CASE OFFICER PROFILE</button>
+            <button class="btn" onclick="showSection('login')">AUTHORIZE MISSION BRIEFING</button>
         </div>
 
-        <div id="loader-screen" class="loader-container">
-            <p style="letter-spacing: 2px; color: #9ca3af; font-size: 0.8rem;">AUTHENTICATING IDENTITY...</p>
-            <div class="progress-bar">
-                <div class="progress" id="progress-fill"></div>
-            </div>
+        <div id="dossier" class="dossier">
+            <p style="color: var(--primary-blue); font-size: 0.7rem;">FILE ID: NH-0924-NOC</p>
+            [span_1](start_span)<p><strong>NAME:</strong> HALE, NOEL[span_1](end_span)</p>
+            [span_2](start_span)<p><strong>DOB:</strong> 1992. 12[span_2](end_span)</p>
+            <p><strong>EDUCATION:</strong><br>
+            - [span_3](start_span)<span class="redacted">University of Cambridge</span> (2013.06)[span_3](end_span)<br>
+            - [span_4](start_span)<span class="redacted">PhD in PBS</span> (2016.07)[span_4](end_span)</p>
+            [span_5](start_span)<p><strong>STATUS:</strong> Senior HUMINT Case Officer[span_5](end_span)</p>
+            [span_6](start_span)<p style="font-size: 0.8rem; opacity: 0.7;">대상자는 <span class="redacted">심리 분석 및 포섭</span> 전문가로, 현재 주니어 요원 <span class="redacted">섀도잉</span> 과정을 담당하고 있음[span_6](end_span).</p>
+            <div class="back-btn" onclick="showSection('home')">RETURN TO MAIN MENU</div>
         </div>
 
-        <div id="dossier-screen" class="dossier-container">
-            <div class="dossier-title">FILE: HALE, NOEL (NOC)</div>
-            
-            <div class="profile-pic-placeholder">IMAGE<br>REDACTED</div>
-            
-            <p><strong>DOB:</strong> 1992. 12<br>
-            <strong>Nationality:</strong> United Kingdom<br>
-            <strong>Education:</strong><br>
-            - <span class="redacted">University of Cambridge</span> 학부 수석 졸업 (2013.06)<br>
-            - <span class="redacted">행동·심리학(PBS)</span> 박사 학위 취득 (2016.07)</p>
-            
-            <div style="clear: both;"></div>
-            
-            <p style="margin-top: 20px;"><strong>Remarks:</strong><br>
-            대상자는 <span class="redacted">고가치 타겟 포섭</span>에 특화되어 있으며, 신입 요원의 <span class="redacted">섀도잉(Shadowing)</span> 과정 전담 멘토로 지정됨. 조사 외의 모든 작전 이력은 <span class="redacted">최고 기밀(Top Secret)</span>로 분류되어 열람이 제한됨.</p>
+        <div id="login" class="login-form">
+            <p style="font-size: 0.8rem; margin-bottom: 2rem;">신원을 증명하십시오.</p>
+            <input type="text" placeholder="CODENAME" id="code">
+            <input type="password" placeholder="SECURITY KEY" id="key">
+            <button class="btn" style="width: 100%;" onclick="startBriefing()">DECRYPT BRIEFING</button>
+            <div class="back-btn" onclick="showSection('home')">CANCEL</div>
+        </div>
 
-            <div class="typewriter">
-                <span id="briefing-text"></span><span class="cursor">_</span>
-            </div>
+        <div id="briefing" class="briefing-result">
+            <div id="typewriter" class="typing"></div>
+            <p id="return-msg" style="display:none; font-size: 0.7rem; color: var(--danger-red); margin-top: 2rem;">
+                * 해당 채널은 10초 후 자동 폐쇄됩니다. 채팅창으로 복귀하십시오.
+            </p>
         </div>
     </div>
 
     <script>
-        function startAuthentication() {
-            // 로그인 화면 숨기기
-            document.getElementById('login-screen').style.display = 'none';
-            // 로딩 화면 표시
-            document.getElementById('loader-screen').style.display = 'block';
+        function showSection(sectionId) {
+            const sections = ['home-menu', 'dossier', 'login', 'briefing'];
+            sections.forEach(s => document.getElementById(s).style.display = 'none');
             
-            // 프로그레스 바 애니메이션 (강제로 width 100%로 변경)
-            setTimeout(() => {
-                document.getElementById('progress-fill').style.width = '100%';
-            }, 100);
-
-            // 2.5초 후 프로필 화면으로 전환
-            setTimeout(() => {
-                document.getElementById('loader-screen').style.display = 'none';
-                document.getElementById('dossier-screen').style.display = 'block';
-                
-                // 지령 타이핑 효과 시작
-                typeBriefing();
-            }, 2500);
+            if(sectionId === 'home') document.getElementById('home-menu').style.display = 'flex';
+            else document.getElementById(sectionId).style.display = 'block';
         }
 
-        const textToType = "\nTARGET: NOEL HALE\nLOCATION: 켄싱턴 xx번지.\nTIME: 26.03.20. 오후6시.\nSTATUS: 선임 요원이 대기 중입니다.\n\n[창을 닫고 안전 채널로 복귀하십시오.]";
-        let i = 0;
+        function startBriefing() {
+            showSection('briefing');
+            const text = ">> IDENTITY VERIFIED...\n>> ACCESSING MISSION SERVER...\n\nTARGET: NOEL HALE\nLOCATION: 켄싱턴 xx번지.\nTIME: 2026.03.20. 18:00.\n\n지령: 선임 요원 노엘 헤일과 접선하여 첫 번째 섀도잉 임무를 수행하십시오. 모든 행동은 기록됩니다.\n\nGOOD LUCK, AGENT.";
+            let i = 0;
+            const speed = 40;
 
-        function typeBriefing() {
-            if (i < textToType.length) {
-                let char = textToType.charAt(i);
-                // 줄바꿈 처리
-                if (char === '\n') {
-                    document.getElementById('briefing-text').innerHTML += '<br>';
+            function typeWriter() {
+                if (i < text.length) {
+                    document.getElementById("typewriter").innerHTML += text.charAt(i) === "\n" ? "<br>" : text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, speed);
                 } else {
-                    document.getElementById('briefing-text').innerHTML += char;
+                    document.getElementById('return-msg').style.display = 'block';
                 }
-                i++;
-                // 타이핑 속도 조절 (랜덤성을 약간 주어 실제 타이핑처럼 연출)
-                setTimeout(typeBriefing, Math.random() * 30 + 30);
             }
+            typeWriter();
         }
     </script>
 </body>
