@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HALE / SIS Internal Network</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+    :root{
+      --bg:#060606;
+      --bg2:#0b0d10;
+      --panel:rgba(13, 15, 18, 0.72);
+      --panel-strong:rgba(13, 15, 18, 0.9);
+      --line:rgba(194, 161, 102, 0.18);
+      --line-strong:rgba(194, 161, 102, 0.34);
+      --text:#ece6d9;
+      --muted:#b4a68c;
+      --soft:#8c8476;
+      --accent:#c2a166;
+      --accent-soft:#8a6c40;
+      --green:#9ac7c2;
+      --shadow:0 30px 100px rgba(0,0,0,.55);
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(194,161,102,.12), transparent 18%),
+        radial-gradient(circle at 50% 28%, rgba(255,255,255,.03), transparent 22%),
+        linear-gradient(180deg, #0b0c0e 0%, #070708 48%, #040404 100%);
+      color:var(--text);
+      font-family:"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body{overflow-x:hidden}
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.12;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.035), transparent 14%, transparent 86%, rgba(255,255,255,.03)),
+        repeating-linear-gradient(to bottom, rgba(255,255,255,.02), rgba(255,255,255,.02) 1px, transparent 1px, transparent 3px);
+      mix-blend-mode:screen;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at center, transparent 0 56%, rgba(0,0,0,.46) 100%),
+        radial-gradient(circle at 50% 20%, rgba(194,161,102,.06), transparent 24%);
+    }
+
+    .frame{
+      position:relative;
+      min-height:100vh;
+      padding:22px;
+    }
+
+    .shell{
+      width:min(1280px, 100%);
+      margin:0 auto;
+      position:relative;
+      border:1px solid rgba(255,255,255,.05);
+      background:linear-gradient(180deg, rgba(9,10,12,.88), rgba(7,7,8,.93));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .shell::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(90deg, transparent 0, rgba(194,161,102,.08) 50%, transparent 100%),
+        radial-gradient(circle at 50% 18%, rgba(194,161,102,.08), transparent 20%),
+        radial-gradient(circle at 10% 10%, rgba(255,255,255,.035), transparent 18%),
+        radial-gradient(circle at 90% 90%, rgba(194,161,102,.03), transparent 16%);
+      opacity:.9;
+    }
+
+    .topbar{
+      position:relative;
+      z-index:2;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:18px;
+      padding:16px 22px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      background:rgba(6,7,8,.55);
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+    .mark{
+      width:38px;
+      height:38px;
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      color:var(--accent);
+      font-size:12px;
+      letter-spacing:.14em;
+      box-shadow:inset 0 0 18px rgba(194,161,102,.04);
+    }
+    .brand-copy h1{
+      margin:0;
+      font-size:11px;
+      letter-spacing:.32em;
+      font-weight:600;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .brand-copy p{
+      margin:4px 0 0;
+      font-size:10px;
+      color:var(--soft);
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--soft);
+      font-size:10px;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .status-dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--accent);
+      box-shadow:0 0 18px rgba(194,161,102,.8);
+    }
+
+    .hero{
+      position:relative;
+      z-index:1;
+      min-height:62vh;
+      display:grid;
+      place-items:center;
+      padding:56px 28px 34px;
+      text-align:center;
+      overflow:hidden;
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 50% 34%, rgba(194,161,102,.10), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent 18%, transparent 82%, rgba(255,255,255,.02));
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:min(900px, 90vw);
+      height:min(900px, 90vw);
+      transform:translate(-50%, -44%);
+      pointer-events:none;
+      border-radius:50%;
+      border:1px solid rgba(194,161,102,.06);
+      box-shadow:
+        0 0 0 90px rgba(194,161,102,.018),
+        0 0 0 180px rgba(255,255,255,.008);
+      opacity:.7;
+    }
+
+    .hero-inner{
+      position:relative;
+      z-index:2;
+      width:min(980px, 100%);
+    }
+
+    .label-row{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:34px;
+    }
+    .label{
+      padding:8px 12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.018);
+      color:var(--muted);
+      font-size:10px;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      line-height:1;
+      backdrop-filter: blur(10px);
+    }
+
+    .micro{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:16px;
+      color:var(--soft);
+      font-size:10px;
+      letter-spacing:.34em;
+      text-transform:uppercase;
+      margin-bottom:20px;
+    }
+    .micro::before,
+    .micro::after{
+      content:"";
+      width:72px;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(194,161,102,.55), transparent);
+    }
+
+    .hale{
+      margin:0;
+      font-family:"Bebas Neue", "Arial Narrow", sans-serif;
+      font-weight:400;
+      font-size:clamp(90px, 18vw, 260px);
+      line-height:.9;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:#d5b27a;
+      text-shadow:
+        0 0 1px rgba(255,255,255,.06),
+        0 0 36px rgba(194,161,102,.08),
+        0 18px 90px rgba(0,0,0,.5);
+      text-indent:.22em;
+    }
+
+    .subline{
+      margin:18px auto 0;
+      max-width:780px;
+      font-family:"Cormorant Garamond", Georgia, serif;
+      font-size:clamp(19px, 2vw, 28px);
+      line-height:1.45;
+      color:#e5ddd0;
+      letter-spacing:.03em;
+    }
+    .subcopy{
+      margin:18px auto 0;
+      max-width:760px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.9;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .hero-bar{
+      width:min(920px, 100%);
+      margin:34px auto 0;
+      padding:14px 16px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      border-top:1px solid rgba(194,161,102,.16);
+      border-bottom:1px solid rgba(194,161,102,.12);
+      color:var(--soft);
+      font-size:10px;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+    }
+
+    .main{
+      position:relative;
+      z-index:2;
+      display:grid;
+      grid-template-columns:1.06fr .94fr;
+      gap:22px;
+      padding:0 24px 24px;
+    }
+    @media (max-width: 980px){
+      .main{grid-template-columns:1fr}
+    }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.05);
+      background:linear-gradient(180deg, rgba(12,13,15,.72), rgba(9,10,12,.88));
+      backdrop-filter: blur(12px);
+      padding:24px;
+      position:relative;
+      overflow:hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(180deg, rgba(255,255,255,.022), transparent 18%, transparent 82%, rgba(194,161,102,.03));
+    }
+
+    .section-kicker{
+      font-size:10px;
+      color:var(--accent);
+      letter-spacing:.3em;
+      text-transform:uppercase;
+      margin-bottom:14px;
+    }
+    .section-title{
+      margin:0 0 16px;
+      font-family:"Cormorant Garamond", Georgia, serif;
+      font-size:clamp(30px, 3vw, 46px);
+      font-weight:500;
+      letter-spacing:.02em;
+      line-height:1.08;
+    }
+    .section-copy{
+      margin:0;
+      color:#cfc4b2;
+      font-size:14px;
+      line-height:1.95;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+      margin-top:22px;
+    }
+    @media (max-width: 620px){
+      .grid{grid-template-columns:1fr}
+    }
+    .stat{
+      padding:16px;
+      border:1px solid rgba(194,161,102,.10);
+      background:rgba(255,255,255,.015);
+    }
+    .stat .k{
+      margin-bottom:8px;
+      font-size:10px;
+      color:var(--soft);
+      letter-spacing:.24em;
+      text-transform:uppercase;
+    }
+    .stat .v{
+      font-size:13px;
+      line-height:1.7;
+      color:#efe6d8;
+    }
+
+    .terminal{
+      position:relative;
+      border:1px solid rgba(194,161,102,.12);
+      background:linear-gradient(180deg, rgba(8,9,10,.9), rgba(5,6,7,.96));
+      padding:20px;
+      overflow:hidden;
+    }
+    .terminal::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:radial-gradient(circle at 50% 0, rgba(194,161,102,.08), transparent 26%);
+    }
+    .terminal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding-bottom:14px;
+      margin-bottom:16px;
+      border-bottom:1px solid rgba(194,161,102,.10);
+      position:relative;
+      z-index:1;
+    }
+    .terminal-head strong{
+      font-size:11px;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      font-weight:600;
+    }
+    .small{
+      font-size:10px;
+      color:var(--soft);
+      letter-spacing:.22em;
+      text-transform:uppercase;
+    }
+
+    .field{margin-bottom:12px; position:relative; z-index:1}
+    label{
+      display:block;
+      margin-bottom:8px;
+      font-size:10px;
+      color:var(--soft);
+      letter-spacing:.24em;
+      text-transform:uppercase;
+    }
+    input{
+      width:100%;
+      border:1px solid rgba(194,161,102,.12);
+      background:rgba(255,255,255,.02);
+      color:var(--text);
+      padding:14px 14px;
+      outline:none;
+      border-radius:0;
+      font-size:14px;
+      transition:.2s ease;
+    }
+    input::placeholder{color:#7b756a}
+    input:focus{
+      border-color:rgba(194,161,102,.34);
+      box-shadow:0 0 0 3px rgba(194,161,102,.08);
+    }
+
+    .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; position:relative; z-index:1}
+    button{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      padding:13px 18px;
+      font-size:11px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      font-weight:700;
+      transition:transform .12s ease, filter .18s ease, background .18s ease;
+      border-radius:0;
+    }
+    button:hover{filter:brightness(1.05)}
+    button:active{transform:translateY(1px)}
+    .primary{
+      background:linear-gradient(180deg, #d0ae73, #b58a4b);
+      color:#1d1408;
+      min-width:172px;
+    }
+    .secondary{
+      background:transparent;
+      color:#d7cab6;
+      border:1px solid rgba(194,161,102,.14);
+    }
+    .hint{
+      margin-top:16px;
+      color:#a99981;
+      font-size:12px;
+      line-height:1.8;
+      position:relative;
+      z-index:1;
+    }
+
+    .console{
+      margin-top:18px;
+      min-height:240px;
+      padding:16px;
+      background:rgba(0,0,0,.32);
+      border:1px solid rgba(194,161,102,.12);
+      color:#e5dac7;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:13px;
+      line-height:1.76;
+      white-space:pre-wrap;
+      position:relative;
+      overflow:hidden;
+    }
+    .console::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(to bottom, rgba(255,255,255,.02), transparent 15%, transparent 85%, rgba(194,161,102,.03));
+    }
+    .caret{display:inline-block; width:9px; height:1.1em; background:var(--accent); vertical-align:-2px; margin-left:4px; animation:blink 1s step-end infinite}
+    @keyframes blink{50%{opacity:0}}
+    .hidden{display:none}
+
+    .briefing-card{
+      margin-top:18px;
+      border:1px solid rgba(194,161,102,.15);
+      background:linear-gradient(180deg, rgba(194,161,102,.07), rgba(194,161,102,.03));
+      padding:18px;
+    }
+    .briefing-card h3{
+      margin:0 0 14px;
+      font-size:11px;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      color:#f1d6ac;
+    }
+    .rows{display:grid; gap:10px}
+    .row{
+      display:grid;
+      grid-template-columns:120px 1fr;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(194,161,102,.10);
+    }
+    .row:last-child{border-bottom:none}
+    .row .k{
+      font-size:10px;
+      color:#c5aa7b;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+    }
+    .row .v{
+      font-size:14px;
+      line-height:1.7;
+    }
+    @media (max-width: 620px){
+      .row{grid-template-columns:1fr}
+    }
+    .note{
+      margin-top:16px;
+      color:#b8ac97;
+      font-size:12px;
+      line-height:1.8;
+    }
+
+    .footer{
+      position:relative;
+      z-index:2;
+      padding:14px 24px 22px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      border-top:1px solid rgba(255,255,255,.05);
+      color:var(--soft);
+      font-size:10px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+    }
+    .footer span{opacity:.92}
+
+    .pulse{animation:pulse 2.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(194,161,102,.10)}50%{box-shadow:0 0 0 8px rgba(194,161,102,0)}}
+    .glitch{position:relative}
+    .glitch::before,.glitch::after{content:attr(data-text); position:absolute; inset:0; pointer-events:none; opacity:0}
+    .accessing .glitch::before{opacity:.18; transform:translate(1px,0); color:#f2d8ab; clip-path:inset(0 0 58% 0)}
+    .accessing .glitch::after{opacity:.18; transform:translate(-1px,0); color:#fff2da; clip-path:inset(62% 0 0 0)}
+
+    @media (max-width: 720px){
+      .frame{padding:10px}
+      .topbar{padding:14px}
+      .hero{padding:44px 18px 26px; min-height:52vh}
+      .label-row{margin-bottom:24px}
+      .subcopy{font-size:12px; line-height:1.8}
+      .main{padding:0 12px 12px}
+      .panel{padding:18px}
+      .brand-copy h1,.brand-copy p{white-space:normal}
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="shell" id="shell">
+      <div class="topbar">
+        <div class="brand">
+          <div class="mark">SIS</div>
+          <div class="brand-copy">
+            <h1>Secret Intelligence Service</h1>
+            <p>Internal network / restricted access</p>
+          </div>
+        </div>
+        <div class="top-right">
+          <span class="status-dot pulse"></span>
+          <span>London node live</span>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div class="hero-inner">
+          <div class="label-row">
+            <div class="label">SIS Internal Network</div>
+            <div class="label">Restricted Clearance</div>
+            <div class="label">London / Section VI</div>
+          </div>
+
+          <div class="micro">Controlled access terminal</div>
+          <h1 class="hale">HALE</h1>
+          <p class="subline">Authorised personnel only. Proceed under controlled access.</p>
+          <p class="subcopy">FIELD BRIEFING CHANNEL · LOW-VISIBILITY OPERATIONS · TEMPORARY HANDLER GATEWAY</p>
+
+          <div class="hero-bar">
+            <span>Embassy-grade visual shell</span>
+            <span>Encrypted presentation layer</span>
+            <span>Single-use access route</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="main">
+        <section class="panel">
+          <div class="section-kicker">Gateway overview</div>
+          <h2 class="section-title glitch" data-text="Controlled Access, Minimal Noise.">Controlled Access, Minimal Noise.</h2>
+          <p class="section-copy">
+            이 노드는 실전 접속감과 분위기를 우선하는 단일 브리핑 페이지입니다. 과장된 해커 연출보다,
+            고급 비밀 기관의 응접실처럼 보이도록 정돈된 화면과 절제된 문장으로 설계했습니다.
+            접속 절차는 연출용이며, 어떤 입력이든 브리핑 화면으로 이어집니다.
+          </p>
+
+          <div class="grid">
+            <div class="stat">
+              <div class="k">Handler</div>
+              <div class="v">Noel Hale / temporary access authority</div>
+            </div>
+            <div class="stat">
+              <div class="k">Clearance tier</div>
+              <div class="v">Field induction / junior NOC route</div>
+            </div>
+            <div class="stat">
+              <div class="k">Operational mode</div>
+              <div class="v">Low-profile contact, briefing, controlled entry</div>
+            </div>
+            <div class="stat">
+              <div class="k">Presentation goal</div>
+              <div class="v">Stylised, high-end, cinematic access experience</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel terminal">
+          <div class="terminal-head">
+            <strong>Secure sign-in</strong>
+            <span class="small">single-use node</span>
+          </div>
+
+          <div id="loginView">
+            <div class="field">
+              <label for="agentName">Operative Name</label>
+              <input id="agentName" type="text" placeholder="Enter operative name" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="agentCode">Validation String</label>
+              <input id="agentCode" type="password" placeholder="Any entry accepted" autocomplete="off" />
+            </div>
+            <div class="actions">
+              <button class="primary" id="accessBtn">Request Access</button>
+              <button class="secondary" id="autofillBtn" type="button">Use Placeholder</button>
+            </div>
+            <div class="hint">
+              입력값은 실제 인증에 사용되지 않습니다. 이 단계는 접속 연출을 위한 가짜 로그인 절차이며,
+              어떤 문구를 입력해도 다음 브리핑 화면으로 이동합니다.
+            </div>
+          </div>
+
+          <div id="briefingView" class="hidden">
+            <div class="console" id="console"></div>
+            <div class="briefing-card hidden" id="briefingCard">
+              <h3>Restricted Tasking</h3>
+              <div class="rows">
+                <div class="row"><div class="k">From</div><div class="v">Noel Hale</div></div>
+                <div class="row"><div class="k">Date</div><div class="v" id="briefDate">26.03.20</div></div>
+                <div class="row"><div class="k">Time</div><div class="v" id="briefTime">15:30</div></div>
+                <div class="row"><div class="k">Location</div><div class="v" id="briefLocation">Kensington Mews House, No. XX</div></div>
+                <div class="row"><div class="k">Instruction</div><div class="v" id="briefInstruction">도착 즉시 노출을 최소화한 채 벨을 한 번만 누르세요. 질문은 현장에서 받겠습니다.</div></div>
+              </div>
+              <div class="note">
+                이 페이지를 닫고 채팅으로 돌아가면, 해당 시간과 장소에서 프롤로그를 바로 시작할 수 있습니다.
+              </div>
+              <div class="actions" style="margin-top:18px">
+                <button class="primary" id="restartBtn" type="button">Reset Terminal</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <span>Fictional access page</span>
+        <span>Mobile-ready / single file</span>
+        <span>Next pass: crest watermark + split profile route</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      sender: 'Noel Hale',
+      date: '26.03.20',
+      time: '15:30',
+      location: 'Kensington Mews House, No. XX',
+      instruction: '도착 즉시 노출을 최소화한 채 벨을 한 번만 누르세요. 질문은 현장에서 받겠습니다.',
+      openLine: 'SIS LONDON NODE // SECURE ACCESS CHANNEL OPEN',
+      nodeLine: 'ROUTE: TEMPORARY FIELD GATEWAY // PRIORITY: AMBER',
+      clearanceLine: 'CLEARANCE TOKEN ACCEPTED // JUNIOR NOC INDUCTION PACKAGE',
+      sealLine: 'AUTHORISED COMMUNICATION // HANDLER IDENT CONFIRMED'
+    };
+
+    const loginView = document.getElementById('loginView');
+    const briefingView = document.getElementById('briefingView');
+    const consoleEl = document.getElementById('console');
+    const briefingCard = document.getElementById('briefingCard');
+    const accessBtn = document.getElementById('accessBtn');
+    const autofillBtn = document.getElementById('autofillBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const agentName = document.getElementById('agentName');
+    const agentCode = document.getElementById('agentCode');
+    const shell = document.getElementById('shell');
+
+    document.getElementById('briefDate').textContent = CONFIG.date;
+    document.getElementById('briefTime').textContent = CONFIG.time;
+    document.getElementById('briefLocation').textContent = CONFIG.location;
+    document.getElementById('briefInstruction').textContent = CONFIG.instruction;
+
+    function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+    async function typeLine(text, delay = 14){
+      for (const ch of text) {
+        consoleEl.textContent += ch;
+        await sleep(delay + Math.random() * 8);
+      }
+      consoleEl.textContent += '\n';
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    async function bootSequence(name){
+      shell.classList.add('accessing');
+      consoleEl.textContent = '';
+      await typeLine(CONFIG.openLine, 10);
+      await typeLine(CONFIG.nodeLine, 12);
+      await sleep(180);
+      await typeLine('VALIDATING LOCAL ENTRY VECTOR ...', 10);
+      await sleep(280);
+      await typeLine(CONFIG.clearanceLine, 10);
+      await typeLine(CONFIG.sealLine, 10);
+      await sleep(260);
+      await typeLine('OPERATIVE: ' + (name || 'UNSPECIFIED ENTRY'), 11);
+      await typeLine('HANDLER: ' + CONFIG.sender.toUpperCase(), 11);
+      await typeLine('PACKAGE STATUS: RELEASED', 11);
+      await sleep(300);
+      await typeLine('—', 18);
+      await sleep(180);
+      await typeLine(CONFIG.sender + '.', 18);
+      await typeLine(CONFIG.date + ' / ' + CONFIG.time, 18);
+      await typeLine(CONFIG.location, 18);
+      await sleep(220);
+      await typeLine(CONFIG.instruction, 18);
+      await typeLine('Return to the active channel when ready.', 18);
+      consoleEl.innerHTML = consoleEl.innerHTML + '<span class="caret"></span>';
+      shell.classList.remove('accessing');
+      briefingCard.classList.remove('hidden');
+    }
+
+    async function requestAccess(){
+      loginView.classList.add('hidden');
+      briefingView.classList.remove('hidden');
+      await bootSequence(agentName.value.trim());
+    }
+
+    accessBtn.addEventListener('click', requestAccess);
+    autofillBtn.addEventListener('click', () => {
+      agentName.value = 'Operative Entry';
+      agentCode.value = 'LONDON-NODE';
+      agentName.focus();
+    });
+    restartBtn.addEventListener('click', () => {
+      briefingView.classList.add('hidden');
+      briefingCard.classList.add('hidden');
+      loginView.classList.remove('hidden');
+      consoleEl.textContent = '';
+      agentCode.value = '';
+      shell.classList.remove('accessing');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+
+    [agentName, agentCode].forEach(el => {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          requestAccess();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
